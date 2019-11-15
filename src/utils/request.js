@@ -2,7 +2,6 @@
 import axios from 'axios'
 import JSONBIGINT from 'json-bigint'
 import store from '@/store'
-import VueRouter from 'vue-router'
 import router from '@/router'
 
 // 创建一个新的axios实例：解决两种不同配置，创建多个axios来给多个不同的配置
@@ -55,7 +54,7 @@ instance.interceptors.request.use(res => {
   // 3.3 刷新失败 拦截到登录页面（登录完了需要跳回）
   if (err.response && err.response.status === 401) {
     // 跳转登录的地址 使用router获取当前访问路径 （vue组件 this.$route.path)
-    const loginConfig = { path: '/login', query: { redirectUrl: VueRouter.currentRoute.path } }
+    const loginConfig = { path: '/login', query: { redirectUrl: router.currentRoute.path } }
     // 用户信息
     const user = store.state.user
     // 没登陆 （严谨代码）

@@ -39,4 +39,6 @@ const router = new VueRouter({
   routes
 })
 
+// 访问权限控制  个人中心/user ，编辑资料 /user/profile，小智同学 /user/chat
+
 export default router
