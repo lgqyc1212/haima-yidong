@@ -4,7 +4,7 @@
     <van-nav-bar
       v-if="path!=='/user'"
       fixed
-      title="黑马头条"
+      title="种马头条"
       right-text="搜索"
       @click-right="$router.push('/search')"
     />
