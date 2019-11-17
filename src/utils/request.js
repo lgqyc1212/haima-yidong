@@ -23,16 +23,16 @@ const instance = axios.create({
 // 请求拦截器  追加token到请求头
 instance.interceptors.request.use(config => {
   // 拦截成功
-  // 获取token (vuex中的state中的user中的token)
+  // 获取token (vuex中的state中user中token)
   if (store.state.user.token) {
     // 追加token
-    config.headers.Authorization = `Bearer${store.state.user.token}`
+    config.headers.Authorization = `Bearer ${store.state.user.token}`
   }
   return config
 }, err => Promise.reject(err))
 
 // 响应拦截器 获取有效数据  token的延长有效期 TODO
-instance.interceptors.request.use(res => {
+instance.interceptors.response.use(res => {
   // 响应数据的剥离
   // 原始的res是什么格式就返回什么格式
   // 剥离无效数据 有效数据 res.data.data
@@ -53,17 +53,17 @@ instance.interceptors.request.use(res => {
   // 3.2 把之前失败的请求继续发送出去
   // 3.3 刷新失败 拦截到登录页面（登录完了需要跳回）
   if (err.response && err.response.status === 401) {
-    // 跳转登录的地址 使用router获取当前访问路径 （vue组件 this.$route.path)
+    // 跳转登录的地址  使用router获取当前访问的路由地址  （vue组件 this.$route.path）
     const loginConfig = { path: '/login', query: { redirectUrl: router.currentRoute.path } }
     // 用户信息
     const user = store.state.user
-    // 没登陆 （严谨代码）
+    // 没登录 (严谨代码)
     if (!user || !user.token || !user.refresh_token) {
       return router.push(loginConfig)
     }
     try {
       // 发刷新token的请求
-      // 注意： 不是使用instance，已经拥有了一些配置，刷新请求不能使用这些配置
+      // 注意：不是使用instance，已经拥有了一些配置，刷新请求不能使用这些配置
       const { data: { data } } = await axios({
         url: 'http://ttapi.research.itcast.cn/app/v1_0/authorizations',
         method: 'put',
@@ -90,15 +90,18 @@ instance.interceptors.request.use(res => {
   return Promise.reject(err)
 })
 
-// 调用接口 （接口地址，请求方法，参数）
+/**
+ * 调用接口的函数，返回值是一个promise
+ * url 接口地址 method 请求方式  data  对象（参数）
+ */
 export default (url, method, data) => {
-  // params 选项是 git参数
+  // params 选项是 get传参
   // data 选项是 其他请求方式的传参
-  instance({
+  return instance({
     url,
     method,
-    // js表达式运行的结果必须是字符串 （params | data）
-    // 严谨处理 get Get GET 都认为是get   使用toLowerCase先转换成小写的
+    // js表达式运行的结果必须是字符串（params|data）
+    // 严谨处理  get Get GET 都认为是get
     [method.toLowerCase() === 'get' ? 'params' : 'data']: data
   })
 }
