@@ -9,9 +9,13 @@
       @click-right="$router.push('/search')"
     />
     <div class="my-wrapper" :class="{noTop:path==='/user'}">
-    <!-- 插入内容 -->
-      <router-view></router-view>
+      <!-- 插入内容 二级路由-->
+      <keep-alive>
+        <router-view v-if="$route.meta.keepAlive"></router-view>
+      </keep-alive>
+      <router-view  v-if="!$route.meta.keepAlive"></router-view>
     </div>
+    <!-- tab栏 -->
     <van-tabbar route>
       <van-tabbar-item to="/" icon="home-o">首页</van-tabbar-item>
       <van-tabbar-item to="/question" icon="chat-o">问答</van-tabbar-item>
