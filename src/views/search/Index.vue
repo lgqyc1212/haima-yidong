@@ -3,8 +3,8 @@
     <van-nav-bar title="搜索中心" left-arrow @click-left="$router.back()" />
     <van-search v-model.trim="q" placeholder="请输入搜索关键词" shape="round" @search="onSearch" />
     <van-cell-group class="suggest-box" v-if="q">
-      <van-cell icon="search" v-for="sug in suggestList" :key="sug">
-        <p v-html="sug" @click="onSearch(sug.replace(`<span>${q}</span>`,q))"></p>
+      <van-cell @click="onSearch(item.replace(`<span>${q}</span>`,q))" icon="search" v-for="item in options" :key="item">
+        <p v-html="item"></p>
       </van-cell>
     </van-cell-group>
     <!-- 历史记录 -->
@@ -24,9 +24,9 @@
 </template>
 
 <script>
+import { suggest } from '@/api/article'
 // 约定本地存储的key
 // 约定本地存储的value '["",""]'
-import suggest from '@/api/article'
 const KEY = 'heima-yidong-history-key'
 export default {
   name: 'search-index',
@@ -35,21 +35,27 @@ export default {
       // 搜索关键字 v-model.trim 自动剔除两侧的空格
       q: '',
       historyList: JSON.parse(window.localStorage.getItem(KEY) || '[]'),
-      suggestList: []
+      // 词条
+      options: [],
+      // 计时器
+      timer: null
     }
   },
   watch: {
     q () {
+      if (!this.q) return false
+
+      // 优化：(函数防抖)
+      // 1. 当你输入内容后，等待一些时间计时，如果用户没有改变内容，此时发送请求
+      // 2. 当你输入内容后，在等待的过程中，用户改变了内容，重新计时
       window.clearTimeout(this.timer)
       this.timer = window.setTimeout(async () => {
-        if (!this.q) {
-          this.suggestList = []
-          return
-        }
+        // 发请求获取词条
         const data = await suggest(this.q)
-        this.suggestList = data.options.map(item =>
-          item.toLowerCase().reqlace(this.q`<span>${this.q}</span>`))
-      }, 200)
+        this.options = data.options.map(item => {
+          return item.toLowerCase().replace(this.q, `<span>${this.q}</span>`)
+        })
+      }, 300)
     }
   },
   methods: {
